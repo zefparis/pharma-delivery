@@ -11,7 +11,7 @@
   <ellipse cx="28" cy="28" rx="3" ry="5" fill="#FF6B35" opacity="0.8" transform="rotate(30 28 28)"/>
   
   <!-- Company name -->
-  <text x="45" y="16" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c5aa0">
+  <text x="45" y="16" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2c5aa0">
     Pharma-Express
   </text>
   
