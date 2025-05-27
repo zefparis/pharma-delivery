@@ -2,14 +2,17 @@
     --primary-color: #2c5aa0;
     --secondary-color: #4CAF50;
     --accent-color: #FF6B35;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
+    --text-dark: #1a202c;
+    --text-light: #6b7280;
     --background-light: #f8f9fa;
-    --border-light: #e9ecef;
+    --border-light: #e5e7eb;
     --success-color: #28a745;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
     --info-color: #17a2b8;
+    --shadow-light: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-medium: 0 8px 32px rgba(0,0,0,0.2);
+    --border-subtle: 1px solid rgba(0,0,0,0.05);
 }
 
 body {
@@ -27,8 +30,9 @@ body {
 
 .navbar {
     background-color: white !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
 }
 
 .btn-primary {
@@ -72,14 +76,15 @@ body {
 
 .card {
     border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin-bottom: 1.5rem;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
 .product-card {
@@ -128,8 +133,9 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     margin-bottom: 2rem;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .breadcrumb {
@@ -148,7 +154,8 @@ body {
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .cart-item img {
@@ -162,7 +169,8 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
     position: sticky;
     top: 2rem;
 }
@@ -173,7 +181,8 @@ body {
     padding: 1.5rem;
     margin-bottom: 1rem;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .status-badge {
@@ -212,7 +221,8 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
     text-align: center;
     margin-bottom: 1rem;
 }
@@ -343,7 +353,8 @@ body {
     background: white;
     padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.05);
     height: fit-content;
 }
 
