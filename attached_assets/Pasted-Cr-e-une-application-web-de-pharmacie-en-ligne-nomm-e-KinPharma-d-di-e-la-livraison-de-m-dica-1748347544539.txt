@@ -1,0 +1,59 @@
+Crée une application web de pharmacie en ligne nommée « KinPharma », dédiée à la livraison de médicaments 24h/24 et 7j/7 à Kinshasa (RDC).
+
+Spécifications techniques :
+
+Backend : Python (Flask ou FastAPI) avec base de données PostgreSQL
+
+Frontend : React.js (ou SvelteKit) avec TailwindCSS pour un design moderne et responsive
+
+Authentification utilisateur :
+
+Par email (sans OTP ni complexité, login direct avec l’adresse mail)
+
+Création de compte et connexion ultra simplifiées, adaptées au contexte RDC
+
+Catalogue produits :
+
+Utilisation de l’API Medipim (catalogue dynamique de médicaments, fallback mock data si l’API n’est pas disponible)
+
+Recherche avancée, filtres par catégorie, laboratoire, indications, etc.
+
+Page de détails produit avec photo, description, prix, disponibilité en stock
+
+Système de commande et panier :
+
+Ajout au panier, gestion des quantités, validation de commande
+
+Adresse de livraison (saisie manuelle + géolocalisation possible)
+
+Livraison optimisée 24h/24 à Kinshasa :
+
+Gestion interne ou via prestataires locaux (API à prévoir)
+
+Suivi de commande en temps réel pour le client (statut, estimation, notifications)
+
+Chat support client intégré :
+
+Chat en temps réel pour assistance avec opérateur
+
+Option d’intégration WhatsApp Business API ou chat interne (websocket ou service équivalent)
+
+Paiement mobile (via Unipesa, intégration des opérateurs locaux : Orange, Airtel, Africell)
+
+Interface d’administration complète :
+
+Gestion du catalogue, des commandes, des livraisons, des clients, du support
+
+Tableaux de bord analytiques et exports
+
+Optimisation mobile :
+
+Design mobile-first (PWA ou version React Native), rapide et fluide sur tous supports
+
+Conformité et sécurité :
+
+Gestion des données personnelles et prescriptions selon les réglementations locales
+
+Fournir le code complet, prêt à être déployé, avec documentation claire et données mock si besoin.
+
+Objectif : Application fiable, rapide, accessible, adaptée au marché congolais, avec un parcours utilisateur ultra simple, support client efficace, et gestion professionnelle des livraisons médicales à domicile.
