@@ -49,11 +49,11 @@ with app.app_context():
     from werkzeug.security import generate_password_hash
     
     # Create admin user if not exists
-    admin = User.query.filter_by(email='admin@kinpharma.cd').first()
+    admin = User.query.filter_by(email='admin@pharma-express.cd').first()
     if not admin:
         admin = User(
-            email='admin@kinpharma.cd',
-            name='Administrateur KinPharma',
+            email='admin@pharma-express.cd',
+            name='Administrateur Pharma-Express',
             password_hash=generate_password_hash('admin123'),
             is_admin=True
         )
