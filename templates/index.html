@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1>Votre pharmacie en ligne à Kinshasa</h1>
+                <p>Commandez vos médicaments en ligne et recevez-les en moins de 2 heures. Service disponible 24h/24 et 7j/7 dans toute la ville de Kinshasa.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('catalog') }}" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-pills"></i> Commander maintenant
+                    </a>
+                    <a href="{{ url_for('contact') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-phone"></i> Nous contacter
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-truck-medical" style="font-size: 8rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h5>Livraison Rapide</h5>
+                <p>Livraison en moins de 2 heures partout à Kinshasa</p>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5>Médicaments Authentiques</h5>
+                <p>Tous nos médicaments sont authentiques et certifiés</p>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h5>Paiement Mobile</h5>
+                <p>Orange Money, Airtel Money, Africell Money</p>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="feature-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <h5>Support 24h/24</h5>
+                <p>Notre équipe est disponible 24h/24 pour vous aider</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2>Produits en vedette</h2>
+                <p class="text-muted">Découvrez nos médicaments les plus populaires</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for product in featured_products %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="{{ product.image_url or 'https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Produit' }}" 
+                                 class="card-img-top" alt="{{ product.name }}">
+                            
+                            {% if product.stock_quantity <= 5 %}
+                                <span class="badge bg-warning stock-badge">Stock limité</span>
+                            {% endif %}
+                            
+                            {% if product.prescription_required %}
+                                <span class="badge bg-info prescription-badge">Prescription requise</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="product-category">{{ product.category.name }}</div>
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="product-price">{{ product.price|currency }}</div>
+                                <small class="text-muted">{{ product.laboratory }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid">
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                   class="btn btn-primary">
+                                    <i class="fas fa-eye"></i> Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large"></i> Voir tout le catalogue
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2>Nos catégories</h2>
+                <p class="text-muted">Trouvez rapidement ce dont vous avez besoin</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <a href="{{ url_for('catalog', category=category.id) }}" 
+                       class="text-decoration-none">
+                        <div class="card text-center h-100 category-card">
+                            <div class="card-body">
+                                <div class="feature-icon mx-auto mb-3" style="width: 3rem; height: 3rem;">
+                                    {% if category.name == 'Antalgiques' %}
+                                        <i class="fas fa-pills"></i>
+                                    {% elif category.name == 'Antibiotiques' %}
+                                        <i class="fas fa-capsules"></i>
+                                    {% elif category.name == 'Vitamines' %}
+                                        <i class="fas fa-leaf"></i>
+                                    {% elif category.name == 'Digestifs' %}
+                                        <i class="fas fa-stomach"></i>
+                                    {% elif category.name == 'Respiratoires' %}
+                                        <i class="fas fa-lungs"></i>
+                                    {% elif category.name == 'Cardiovasculaires' %}
+                                        <i class="fas fa-heartbeat"></i>
+                                    {% else %}
+                                        <i class="fas fa-medkit"></i>
+                                    {% endif %}
+                                </div>
+                                <h6 class="card-title">{{ category.name }}</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2>Besoin d'aide pour choisir vos médicaments ?</h2>
+                <p class="lead">Notre équipe de pharmaciens qualifiés est à votre disposition pour vous conseiller.</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-comments"></i> Contactez-nous
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Finaliser ma commande - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('cart') }}">Panier</a></li>
+            <li class="breadcrumb-item active">Commande</li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-credit-card"></i> Finaliser ma commande</h1>
+            <p class="text-muted">Vérifiez vos informations et confirmez votre commande</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Checkout Form -->
+        <div class="col-lg-8">
+            <form method="POST" id="checkout-form" onsubmit="return validateCheckoutForm()">
+                {{ form.hidden_tag() }}
+                
+                <!-- Delivery Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Informations de livraison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form.delivery_address.label(class="form-label") }}
+                            {{ form.delivery_address() }}
+                            {% if form.delivery_address.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.delivery_address.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Soyez précis pour faciliter la livraison (nom de la rue, numéro, quartier, commune)
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="get-location-btn" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-map-marker-alt"></i> Utiliser ma position
+                        </button>
+                        
+                        <div class="mt-3">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes() }}
+                            <div class="form-text">
+                                Instructions spéciales pour le livreur (code d'accès, étage, etc.)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-mobile-alt"></i> Méthode de paiement</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-methods">
+                            <div class="payment-method" data-value="orange">
+                                <div class="text-center">
+                                    <i class="fas fa-mobile-alt" style="font-size: 2rem; color: #FF6B00;"></i>
+                                    <h6 class="mt-2">Orange Money</h6>
+                                    <small class="text-muted">Paiement via Orange Money</small>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method" data-value="airtel">
+                                <div class="text-center">
+                                    <i class="fas fa-mobile-alt" style="font-size: 2rem; color: #E60012;"></i>
+                                    <h6 class="mt-2">Airtel Money</h6>
+                                    <small class="text-muted">Paiement via Airtel Money</small>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method" data-value="africell">
+                                <div class="text-center">
+                                    <i class="fas fa-mobile-alt" style="font-size: 2rem; color: #0066CC;"></i>
+                                    <h6 class="mt-2">Africell Money</h6>
+                                    <small class="text-muted">Paiement via Africell Money</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{ form.payment_method(style="display: none;") }}
+                        
+                        <div class="mt-3">
+                            {{ form.payment_phone.label(class="form-label") }}
+                            {{ form.payment_phone() }}
+                            {% if form.payment_phone.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.payment_phone.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Numéro de téléphone associé à votre compte mobile money
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Review -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list"></i> Révision de la commande</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart_items %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 {% if not loop.last %}border-bottom pb-2{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ item.product.image_url or 'https://via.placeholder.com/50x50/f8f9fa/6c757d?text=P' }}" 
+                                         alt="{{ item.product.name }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-0">{{ item.product.name }}</h6>
+                                        <small class="text-muted">Quantité: {{ item.quantity }}</small>
+                                        {% if item.product.prescription_required %}
+                                            <br><small class="text-info">
+                                                <i class="fas fa-prescription"></i> Prescription requise
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold">{{ (item.product.price * item.quantity)|currency }}</div>
+                                    <small class="text-muted">{{ item.product.price|currency }} × {{ item.quantity }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check-circle"></i> Confirmer ma commande
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="cart-summary">
+                <h5 class="mb-3">Résumé de la commande</h5>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Sous-total ({{ cart_items|length }} article{% if cart_items|length > 1 %}s{% endif %})</span>
+                    <span>{{ total|currency }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Livraison</span>
+                    <span class="text-success">
+                        {% if total >= 50000 %}
+                            Gratuite
+                        {% else %}
+                            5.000 CDF
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total à payer</strong>
+                    <strong class="text-success">
+                        {% if total >= 50000 %}
+                            {{ total|currency }}
+                        {% else %}
+                            {{ (total + 5000)|currency }}
+                        {% endif %}
+                    </strong>
+                </div>
+                
+                <!-- Delivery info -->
+                <div class="alert alert-info small">
+                    <i class="fas fa-truck"></i>
+                    <strong>Livraison estimée:</strong><br>
+                    1-2 heures dans Kinshasa
+                </div>
+                
+                <!-- Security badges -->
+                <div class="text-center mt-3">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <i class="fas fa-shield-alt text-success"></i><br>
+                            <small>Sécurisé</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-truck text-primary"></i><br>
+                            <small>Rapide</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-medal text-warning"></i><br>
+                            <small>Qualité</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prescription reminder -->
+            {% set has_prescription_items = cart_items|selectattr('product.prescription_required')|list %}
+            {% if has_prescription_items %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-prescription"></i>
+                    <strong>Important:</strong> Vous avez {{ has_prescription_items|length }} produit{% if has_prescription_items|length > 1 %}s{% endif %} 
+                    nécessitant une prescription. Préparez votre ordonnance pour la livraison.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializePaymentMethods();
+    initializeGeolocation();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <div class="text-center mb-4">
+                <h5 class="text-white">Administration</h5>
+                <small class="text-white-50">KinPharma</small>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link active" href="{{ url_for('admin_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_products') }}">
+                    <i class="fas fa-pills"></i> Produits
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_orders') }}">
+                    <i class="fas fa-box"></i> Commandes
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_users') }}">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_messages') }}">
+                    <i class="fas fa-envelope"></i> Messages
+                </a>
+                <hr class="text-white-50">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-arrow-left"></i> Retour au site
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord</h1>
+                <small class="text-muted">Bienvenue, {{ current_user.name }}</small>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="admin-stats bg-primary text-white">
+                        <h3>{{ total_users }}</h3>
+                        <p class="mb-0">
+                            <i class="fas fa-users"></i> Utilisateurs
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="admin-stats bg-success text-white">
+                        <h3>{{ total_products }}</h3>
+                        <p class="mb-0">
+                            <i class="fas fa-pills"></i> Produits
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="admin-stats bg-info text-white">
+                        <h3>{{ total_orders }}</h3>
+                        <p class="mb-0">
+                            <i class="fas fa-box"></i> Commandes
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="admin-stats bg-warning text-white">
+                        <h3>{{ pending_orders }}</h3>
+                        <p class="mb-0">
+                            <i class="fas fa-clock"></i> En attente
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Recent Orders -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-list"></i> Commandes récentes</h5>
+                            <a href="{{ url_for('admin_orders') }}" class="btn btn-outline-primary btn-sm">
+                                Voir tout
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_orders %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Client</th>
+                                                <th>Total</th>
+                                                <th>Statut</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for order in recent_orders %}
+                                                <tr>
+                                                    <td>#{{ order.id }}</td>
+                                                    <td>{{ order.user.name }}</td>
+                                                    <td>{{ order.total_amount|currency }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if order.status.name == 'PENDING' %}bg-warning
+                                                            {% elif order.status.name == 'CONFIRMED' %}bg-info
+                                                            {% elif order.status.name == 'PREPARING' %}bg-primary
+                                                            {% elif order.status.name == 'SHIPPED' %}bg-primary
+                                                            {% elif order.status.name == 'DELIVERED' %}bg-success
+                                                            {% elif order.status.name == 'CANCELLED' %}bg-danger
+                                                            {% endif %}">
+                                                            {{ order.status.value }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ order.created_at.strftime('%d/%m') }}</td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            {% if order.status.name == 'PENDING' %}
+                                                                <a href="{{ url_for('admin_update_order_status', order_id=order.id, new_status='Confirmée') }}" 
+                                                                   class="btn btn-outline-success" title="Confirmer">
+                                                                    <i class="fas fa-check"></i>
+                                                                </a>
+                                                            {% elif order.status.name == 'CONFIRMED' %}
+                                                                <a href="{{ url_for('admin_update_order_status', order_id=order.id, new_status='En préparation') }}" 
+                                                                   class="btn btn-outline-primary" title="Préparer">
+                                                                    <i class="fas fa-cog"></i>
+                                                                </a>
+                                                            {% elif order.status.name == 'PREPARING' %}
+                                                                <a href="{{ url_for('admin_update_order_status', order_id=order.id, new_status='Expédiée') }}" 
+                                                                   class="btn btn-outline-info" title="Expédier">
+                                                                    <i class="fas fa-truck"></i>
+                                                                </a>
+                                                            {% elif order.status.name == 'SHIPPED' %}
+                                                                <a href="{{ url_for('admin_update_order_status', order_id=order.id, new_status='Livrée') }}" 
+                                                                   class="btn btn-outline-success" title="Livrer">
+                                                                    <i class="fas fa-check-circle"></i>
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-box text-muted"></i>
+                                    <p class="text-muted">Aucune commande récente</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerts -->
+                <div class="col-lg-4">
+                    <!-- Low Stock Alert -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-warning text-white">
+                            <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Stock faible</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if low_stock_products %}
+                                {% for product in low_stock_products[:5] %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small>{{ product.name[:20] }}{% if product.name|length > 20 %}...{% endif %}</small>
+                                        <span class="badge bg-warning">{{ product.stock_quantity }}</span>
+                                    </div>
+                                {% endfor %}
+                                {% if low_stock_products|length > 5 %}
+                                    <small class="text-muted">
+                                        et {{ low_stock_products|length - 5 }} autre(s)...
+                                    </small>
+                                {% endif %}
+                            {% else %}
+                                <small class="text-muted">Aucun produit en stock faible</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Alert -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-envelope"></i> Messages non lus</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if unread_messages > 0 %}
+                                <p class="mb-2">{{ unread_messages }} message{% if unread_messages > 1 %}s{% endif %} non lu{% if unread_messages > 1 %}s{% endif %}</p>
+                                <a href="{{ url_for('admin_messages') }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> Voir les messages
+                                </a>
+                            {% else %}
+                                <small class="text-muted">Aucun message non lu</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-bolt"></i> Actions rapides</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('admin_add_product') }}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-plus"></i> Ajouter un produit
+                                </a>
+                                <a href="{{ url_for('admin_orders', status='En attente') }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-clock"></i> Commandes en attente
+                                </a>
+                                <a href="{{ url_for('admin_messages') }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-envelope"></i> Voir les messages
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des utilisateurs - Administration KinPharma{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <div class="text-center mb-4">
+                <h5 class="text-white">Administration</h5>
+                <small class="text-white-50">KinPharma</small>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_products') }}">
+                    <i class="fas fa-pills"></i> Produits
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_orders') }}">
+                    <i class="fas fa-box"></i> Commandes
+                </a>
+                <a class="nav-link active" href="{{ url_for('admin_users') }}">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_messages') }}">
+                    <i class="fas fa-envelope"></i> Messages
+                </a>
+                <hr class="text-white-50">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-arrow-left"></i> Retour au site
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users"></i> Gestion des utilisateurs</h1>
+                <div class="text-muted">
+                    Total: {{ users.total }} utilisateur{% if users.total > 1 %}s{% endif %}
+                </div>
+            </div>
+            
+            <!-- Search -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Rechercher par nom ou email..." 
+                                   value="{{ search_query or '' }}">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Users List -->
+            <div class="card">
+                <div class="card-body">
+                    {% if users.items %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Utilisateur</th>
+                                        <th>Contact</th>
+                                        <th>Commandes</th>
+                                        <th>Inscription</th>
+                                        <th>Type</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users.items %}
+                                        <tr>
+                                            <td>{{ user.id }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                         style="width: 40px; height: 40px;">
+                                                        {{ user.name[0].upper() }}
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ user.name }}</strong><br>
+                                                        <small class="text-muted">{{ user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if user.phone %}
+                                                    <i class="fas fa-phone text-success"></i> {{ user.phone }}<br>
+                                                {% endif %}
+                                                {% if user.address %}
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-map-marker-alt"></i> 
+                                                        {{ user.address[:30] }}{% if user.address|length > 30 %}...{% endif %}
+                                                    </small>
+                                                {% else %}
+                                                    <small class="text-muted">Adresse non renseignée</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ user.orders|length }}</strong> commande{% if user.orders|length > 1 %}s{% endif %}<br>
+                                                {% if user.orders %}
+                                                    <small class="text-muted">
+                                                        Total: {{ "%.0f"|format(user.orders|sum(attribute='total_amount') or 0) }} CDF
+                                                    </small>
+                                                {% else %}
+                                                    <small class="text-muted">Aucune commande</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ user.created_at.strftime('%d/%m/%Y') }}<br>
+                                                <small class="text-muted">{{ user.created_at.strftime('%H:%M') }}</small>
+                                            </td>
+                                            <td>
+                                                {% if user.is_admin %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-user-shield"></i> Admin
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-primary">
+                                                        <i class="fas fa-user"></i> Client
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-info" type="button" 
+                                                            data-bs-toggle="collapse" data-bs-target="#user-{{ user.id }}"
+                                                            title="Voir détails">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    
+                                                    {% if user.orders %}
+                                                        <a href="{{ url_for('admin_orders') }}?user_id={{ user.id }}" 
+                                                           class="btn btn-outline-primary" title="Voir commandes">
+                                                            <i class="fas fa-box"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    
+                                                    {% if not user.is_admin or user.id != current_user.id %}
+                                                        <button class="btn btn-outline-warning" title="Actions" disabled>
+                                                            <i class="fas fa-cog"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Collapsible User Details -->
+                                        <tr class="collapse" id="user-{{ user.id }}">
+                                            <td colspan="7">
+                                                <div class="bg-light p-3 rounded">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6><i class="fas fa-info-circle"></i> Informations personnelles</h6>
+                                                            <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                                                            <p class="mb-1"><strong>Téléphone:</strong> {{ user.phone or 'Non renseigné' }}</p>
+                                                            <p class="mb-1"><strong>Adresse:</strong></p>
+                                                            <p class="mb-3 small">{{ user.address or 'Adresse non renseignée' }}</p>
+                                                            
+                                                            <h6><i class="fas fa-calendar"></i> Dates importantes</h6>
+                                                            <p class="mb-1"><strong>Inscription:</strong> {{ user.created_at.strftime('%d/%m/%Y à %H:%M') }}</p>
+                                                            {% if user.orders %}
+                                                                {% set last_order = user.orders|sort(attribute='created_at', reverse=true)|first %}
+                                                                <p class="mb-1"><strong>Dernière commande:</strong> {{ last_order.created_at.strftime('%d/%m/%Y') }}</p>
+                                                            {% endif %}
+                                                        </div>
+                                                        
+                                                        <div class="col-md-6">
+                                                            <h6><i class="fas fa-chart-bar"></i> Statistiques</h6>
+                                                            <div class="row text-center mb-3">
+                                                                <div class="col-4">
+                                                                    <div class="admin-stats">
+                                                                        <h4>{{ user.orders|length }}</h4>
+                                                                        <small>Commandes</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <div class="admin-stats">
+                                                                        <h4>{{ user.orders|selectattr('status.name', 'equalto', 'DELIVERED')|list|length }}</h4>
+                                                                        <small>Livrées</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <div class="admin-stats">
+                                                                        <h4>{{ "%.0f"|format(user.orders|sum(attribute='total_amount') or 0) }}</h4>
+                                                                        <small>CDF</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {% if user.orders %}
+                                                                <h6><i class="fas fa-history"></i> Commandes récentes</h6>
+                                                                {% for order in user.orders|sort(attribute='created_at', reverse=true)[:3] %}
+                                                                    <div class="d-flex justify-content-between align-items-center mb-2 small">
+                                                                        <div>
+                                                                            <strong>#{{ order.id }}</strong> - {{ order.created_at.strftime('%d/%m') }}
+                                                                        </div>
+                                                                        <div class="text-end">
+                                                                            <div>{{ order.total_amount|currency }}</div>
+                                                                            <span class="badge 
+                                                                                {% if order.status.name == 'PENDING' %}bg-warning
+                                                                                {% elif order.status.name == 'DELIVERED' %}bg-success
+                                                                                {% else %}bg-info
+                                                                                {% endif %} small">
+                                                                                {{ order.status.value }}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if users.pages > 1 %}
+                            <nav aria-label="Navigation des pages">
+                                <ul class="pagination justify-content-center">
+                                    {% if users.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_users', page=users.prev_num, search=search_query) }}">
+                                                Précédent
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in users.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != users.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('admin_users', page=page_num, search=search_query) }}">
+                                                        {{ page_num }}
+                                                    </a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">…</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if users.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_users', page=users.next_num, search=search_query) }}">
+                                                Suivant
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users" style="font-size: 3rem; color: var(--text-light);"></i>
+                            <h4 class="mt-3">Aucun utilisateur trouvé</h4>
+                            <p class="text-muted">
+                                {% if search_query %}
+                                    Aucun résultat pour "{{ search_query }}"
+                                {% else %}
+                                    Aucun utilisateur enregistré
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

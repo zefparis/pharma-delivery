@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Commande - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-credit-card text-primary me-2"></i>
+                Finaliser ma commande
+            </h2>
+            
+            <!-- Progress Steps -->
+            <div class="mt-3">
+                <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center text-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span>Panier</span>
+                    </div>
+                    <div class="flex-grow-1 border-top mx-3"></div>
+                    <div class="d-flex align-items-center text-primary">
+                        <i class="fas fa-circle me-2"></i>
+                        <span>Commande</span>
+                    </div>
+                    <div class="flex-grow-1 border-top mx-3"></div>
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="far fa-circle me-2"></i>
+                        <span>Confirmation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        <div class="row">
+            <!-- Order Details -->
+            <div class="col-lg-8">
+                <!-- Delivery Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-map-marker-alt me-2"></i>Informations de livraison
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Téléphone *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ current_user.phone or '' }}" required
+                                       placeholder="+243 XXX XXX XXX">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="delivery_time" class="form-label">Heure de livraison préférée</label>
+                                <select class="form-select" id="delivery_time" name="delivery_time">
+                                    <option value="asap">Dès que possible</option>
+                                    <option value="morning">Matin (8h-12h)</option>
+                                    <option value="afternoon">Après-midi (12h-18h)</option>
+                                    <option value="evening">Soir (18h-22h)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="delivery_address" class="form-label">Adresse de livraison *</label>
+                            <textarea class="form-control" id="delivery_address" name="delivery_address" 
+                                      rows="3" required placeholder="Commune, avenue, numéro, point de repère...">{{ current_user.address or '' }}</textarea>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Précisez bien votre commune, avenue et un point de repère pour faciliter la livraison.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-mobile-alt me-2"></i>Mode de paiement
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                           id="orange" value="orange" checked>
+                                    <label class="form-check-label" for="orange">
+                                        <i class="fas fa-mobile text-warning me-2"></i>Orange Money
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                           id="airtel" value="airtel">
+                                    <label class="form-check-label" for="airtel">
+                                        <i class="fas fa-mobile text-danger me-2"></i>Airtel Money
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                           id="africell" value="africell">
+                                    <label class="form-check-label" for="africell">
+                                        <i class="fas fa-mobile text-primary me-2"></i>Africell Money
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                           id="cash" value="cash">
+                                    <label class="form-check-label" for="cash">
+                                        <i class="fas fa-money-bill text-success me-2"></i>Paiement à la livraison
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Paiement sécurisé:</strong> 
+                            Nous travaillons avec tous les opérateurs mobiles du Congo pour vous offrir un paiement simple et sécurisé.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Items Review -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Articles commandés
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% for item in cart_items %}
+                        <div class="d-flex align-items-center mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" 
+                                 class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ item.product.name }}</h6>
+                                <p class="text-muted small mb-1">{{ item.product.manufacturer }}</p>
+                                {% if item.product.prescription_required %}
+                                    <span class="badge bg-warning">Prescription requise</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <div>Qté: {{ item.quantity }}</div>
+                                <strong class="text-primary">{{ "{:,.0f}".format(item.subtotal) }} FC</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card sticky-top">
+                    <div class="card-header">
+                        <h5 class="mb-0">Résumé de commande</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sous-total ({{ cart_items|length }} articles)</span>
+                            <span>{{ "{:,.0f}".format(total) }} FC</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Livraison</span>
+                            <span class="text-success">Gratuite</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-muted">
+                            <small>TVA incluse</small>
+                            <small>{{ "{:,.0f}".format(total * 0.16) }} FC</small>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total</strong>
+                            <strong class="text-primary fs-4">{{ "{:,.0f}".format(total) }} FC</strong>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>Confirmer la commande
+                            </button>
+                            <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour au panier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Prescription Warning -->
+                {% set prescription_items = cart_items | selectattr('product.prescription_required', 'equalto', true) | list %}
+                {% if prescription_items %}
+                <div class="card mt-3 border-warning">
+                    <div class="card-body">
+                        <h6 class="text-warning">
+                            <i class="fas fa-prescription me-2"></i>Prescription médicale
+                        </h6>
+                        <p class="small mb-0">
+                            Une ordonnance valide sera demandée lors de la livraison pour 
+                            {{ prescription_items|length }} article(s).
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Delivery Info -->
+                <div class="card mt-3 border-success">
+                    <div class="card-body">
+                        <h6 class="text-success">
+                            <i class="fas fa-truck me-2"></i>Livraison express 24h/24
+                        </h6>
+                        <p class="small mb-0">
+                            Livraison gratuite en moins de 2h dans toute la ville de Kinshasa.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

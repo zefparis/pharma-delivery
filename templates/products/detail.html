@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('catalog') }}">Catalogue</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('catalog', category=product.category_id) }}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-5 mb-4">
+            <div class="position-relative">
+                <img src="{{ product.image_url or 'https://via.placeholder.com/500x400/f8f9fa/6c757d?text=Produit' }}" 
+                     class="img-fluid product-detail-img w-100" alt="{{ product.name }}">
+                
+                {% if product.stock_quantity <= 5 %}
+                    <span class="badge bg-warning position-absolute top-0 end-0 m-3">
+                        {% if product.stock_quantity == 0 %}
+                            Rupture de stock
+                        {% else %}
+                            Stock limité ({{ product.stock_quantity }})
+                        {% endif %}
+                    </span>
+                {% endif %}
+                
+                {% if product.prescription_required %}
+                    <span class="badge bg-info position-absolute top-0 start-0 m-3">
+                        <i class="fas fa-prescription"></i> Prescription requise
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-lg-7">
+            <div class="product-category text-uppercase small text-muted mb-2">
+                {{ product.category.name }}
+            </div>
+            
+            <h1 class="h2 mb-3">{{ product.name }}</h1>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="product-price h3 text-success mb-0">{{ product.price|currency }}</div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    {% if product.stock_quantity > 0 %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check"></i> En stock ({{ product.stock_quantity }})
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times"></i> Rupture de stock
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Product Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Informations produit</h5>
+                    <div class="row">
+                        {% if product.laboratory %}
+                        <div class="col-sm-6 mb-2">
+                            <strong><i class="fas fa-flask"></i> Laboratoire:</strong><br>
+                            {{ product.laboratory }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.dosage %}
+                        <div class="col-sm-6 mb-2">
+                            <strong><i class="fas fa-weight"></i> Dosage:</strong><br>
+                            {{ product.dosage }}
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.form %}
+                        <div class="col-sm-6 mb-2">
+                            <strong><i class="fas fa-pills"></i> Forme:</strong><br>
+                            {{ product.form }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-sm-6 mb-2">
+                            <strong><i class="fas fa-prescription"></i> Prescription:</strong><br>
+                            {% if product.prescription_required %}
+                                <span class="text-warning">Requise</span>
+                            {% else %}
+                                <span class="text-success">Non requise</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            {% if product.description %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Add to Cart Form -->
+            {% if current_user.is_authenticated %}
+                {% if product.stock_quantity > 0 %}
+                    <form method="POST" action="{{ url_for('add_to_cart') }}" class="mb-4">
+                        {{ form.hidden_tag() }}
+                        {{ form.product_id() }}
+                        
+                        <div class="row align-items-end">
+                            <div class="col-md-4 mb-3">
+                                <label for="quantity" class="form-label">Quantité</label>
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary btn-quantity-minus" type="button">-</button>
+                                    {{ form.quantity(class="form-control text-center quantity-input", **{"data-max-stock": product.stock_quantity}) }}
+                                    <button class="btn btn-outline-secondary btn-quantity-plus" type="button">+</button>
+                                </div>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-cart-plus"></i> Ajouter au panier
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Ce produit est actuellement en rupture de stock.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <a href="{{ url_for('login') }}">Connectez-vous</a> pour ajouter ce produit à votre panier.
+                </div>
+            {% endif %}
+            
+            <!-- Warning for prescription -->
+            {% if product.prescription_required %}
+            <div class="alert alert-warning">
+                <i class="fas fa-prescription"></i>
+                <strong>Attention:</strong> Ce médicament nécessite une prescription médicale. 
+                Vous devrez fournir votre ordonnance lors de la livraison.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="related-products">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3>Produits similaires</h3>
+                <p class="text-muted">D'autres produits de la catégorie {{ product.category.name }}</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for related_product in related_products %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="{{ related_product.image_url or 'https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Produit' }}" 
+                                 class="card-img-top" alt="{{ related_product.name }}">
+                            
+                            {% if related_product.stock_quantity <= 5 %}
+                                <span class="badge bg-warning stock-badge">Stock limité</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ related_product.name }}</h6>
+                            <div class="product-price small">{{ related_product.price|currency }}</div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid">
+                                <a href="{{ url_for('product_detail', product_id=related_product.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced quantity controls for product detail page
+    const quantityInput = document.querySelector('.quantity-input');
+    const minusBtn = document.querySelector('.btn-quantity-minus');
+    const plusBtn = document.querySelector('.btn-quantity-plus');
+    
+    if (quantityInput && minusBtn && plusBtn) {
+        const maxStock = parseInt(quantityInput.dataset.maxStock) || 999;
+        
+        minusBtn.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value) || 1;
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        });
+        
+        plusBtn.addEventListener('click', function() {
+            const currentValue = parseInt(quantityInput.value) || 1;
+            if (currentValue < maxStock) {
+                quantityInput.value = currentValue + 1;
+            }
+        });
+        
+        quantityInput.addEventListener('change', function() {
+            const value = parseInt(this.value) || 1;
+            if (value < 1) {
+                this.value = 1;
+            } else if (value > maxStock) {
+                this.value = maxStock;
+                showAlert(`Quantité maximale disponible: ${maxStock}`, 'warning');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

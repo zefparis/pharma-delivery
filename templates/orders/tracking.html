@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Mes commandes - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item active">Mes commandes</li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-box"></i> Mes commandes</h1>
+            <p class="text-muted">Suivez l'état de vos commandes et consultez votre historique</p>
+        </div>
+    </div>
+    
+    {% if orders.items %}
+        <!-- Orders List -->
+        {% for order in orders.items %}
+            <div class="order-card">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="mb-1">Commande #{{ order.id }}</h5>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ order.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                                </small>
+                            </div>
+                            <span class="badge status-badge 
+                                {% if order.status.name == 'PENDING' %}status-pending
+                                {% elif order.status.name == 'CONFIRMED' %}status-confirmed
+                                {% elif order.status.name == 'PREPARING' %}status-preparing
+                                {% elif order.status.name == 'SHIPPED' %}status-shipped
+                                {% elif order.status.name == 'DELIVERED' %}status-delivered
+                                {% elif order.status.name == 'CANCELLED' %}status-cancelled
+                                {% endif %}">
+                                {{ order.status.value }}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong>Total:</strong> {{ order.total_amount|currency }}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong>Paiement:</strong>
+                            {% if order.payment_method == 'orange' %}
+                                <i class="fas fa-mobile-alt text-warning"></i> Orange Money
+                            {% elif order.payment_method == 'airtel' %}
+                                <i class="fas fa-mobile-alt text-danger"></i> Airtel Money
+                            {% elif order.payment_method == 'africell' %}
+                                <i class="fas fa-mobile-alt text-primary"></i> Africell Money
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Livraison:</strong> {{ order.delivery_address[:50] }}{% if order.delivery_address|length > 50 %}...{% endif %}
+                        </div>
+                        
+                        <!-- Order Items Summary -->
+                        <div class="small text-muted">
+                            <strong>Articles:</strong>
+                            {% for item in order.items[:3] %}
+                                {{ item.product.name }}{% if item.quantity > 1 %} ({{ item.quantity }}){% endif %}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                            {% if order.items|length > 3 %}
+                                et {{ order.items|length - 3 }} autre{% if order.items|length - 3 > 1 %}s{% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 text-md-end">
+                        <!-- Order Status Timeline -->
+                        <div class="mb-3">
+                            {% if order.status.name == 'PENDING' %}
+                                <div class="small">
+                                    <i class="fas fa-clock text-warning"></i> En attente de confirmation
+                                </div>
+                            {% elif order.status.name == 'CONFIRMED' %}
+                                <div class="small">
+                                    <i class="fas fa-check text-info"></i> Confirmée - En préparation
+                                </div>
+                            {% elif order.status.name == 'PREPARING' %}
+                                <div class="small">
+                                    <i class="fas fa-cog fa-spin text-primary"></i> Préparation en cours
+                                </div>
+                            {% elif order.status.name == 'SHIPPED' %}
+                                <div class="small">
+                                    <i class="fas fa-truck text-primary"></i> En cours de livraison
+                                </div>
+                            {% elif order.status.name == 'DELIVERED' %}
+                                <div class="small text-success">
+                                    <i class="fas fa-check-circle"></i> Livrée
+                                    {% if order.delivered_at %}
+                                        le {{ order.delivered_at.strftime('%d/%m/%Y') }}
+                                    {% endif %}
+                                </div>
+                            {% elif order.status.name == 'CANCELLED' %}
+                                <div class="small text-danger">
+                                    <i class="fas fa-times-circle"></i> Annulée
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="btn-group-vertical w-100" role="group">
+                            <button class="btn btn-outline-primary btn-sm" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#order-details-{{ order.id }}">
+                                <i class="fas fa-eye"></i> Voir détails
+                            </button>
+                            
+                            {% if order.status.name in ['PENDING', 'CONFIRMED'] %}
+                                <a href="{{ url_for('contact') }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                            {% endif %}
+                            
+                            {% if order.status.name == 'DELIVERED' %}
+                                <a href="{{ url_for('catalog') }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-redo"></i> Recommander
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Collapsible Order Details -->
+                <div class="collapse mt-3" id="order-details-{{ order.id }}">
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Articles commandés:</h6>
+                            {% for item in order.items %}
+                                <div class="d-flex justify-content-between align-items-center mb-2 small">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ item.product.image_url or 'https://via.placeholder.com/40x40/f8f9fa/6c757d?text=P' }}" 
+                                             alt="{{ item.product.name }}" class="rounded me-2" 
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div>
+                                            <div class="fw-bold">{{ item.product.name }}</div>
+                                            <div class="text-muted">{{ item.product.category.name }}</div>
+                                            {% if item.product.prescription_required %}
+                                                <small class="text-info">
+                                                    <i class="fas fa-prescription"></i> Prescription requise
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>{{ (item.price * item.quantity)|currency }}</div>
+                                        <small class="text-muted">{{ item.price|currency }} × {{ item.quantity }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <h6>Informations de livraison:</h6>
+                            <div class="small">
+                                <strong>Adresse:</strong><br>
+                                {{ order.delivery_address }}<br><br>
+                                
+                                <strong>Téléphone:</strong><br>
+                                {{ order.payment_phone }}<br><br>
+                                
+                                {% if order.notes %}
+                                    <strong>Notes:</strong><br>
+                                    {{ order.notes }}<br><br>
+                                {% endif %}
+                                
+                                <strong>Total:</strong><br>
+                                <span class="h6 text-success">{{ order.total_amount|currency }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% if orders.pages > 1 %}
+            <nav aria-label="Navigation des pages">
+                <ul class="pagination justify-content-center">
+                    {% if orders.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('user_orders', page=orders.prev_num) }}">
+                                Précédent
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in orders.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != orders.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('user_orders', page=page_num) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('user_orders', page=orders.next_num) }}">
+                                Suivant
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <i class="fas fa-box-open" style="font-size: 4rem; color: var(--text-light);"></i>
+            <h3 class="mt-3">Aucune commande trouvée</h3>
+            <p class="text-muted">Vous n'avez pas encore passé de commande</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-pills"></i> Découvrir nos produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

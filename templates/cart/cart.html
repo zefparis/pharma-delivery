@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Panier - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-shopping-cart text-primary me-2"></i>
+                Mon Panier
+            </h2>
+            <p class="text-muted">Vérifiez vos articles avant de passer commande</p>
+        </div>
+    </div>
+
+    {% if cart_items %}
+    <div class="row">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            {% for item in cart_items %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" 
+                                 class="img-fluid rounded" style="height: 80px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="mb-1">{{ item.product.name }}</h6>
+                            <p class="text-muted small mb-1">{{ item.product.manufacturer }}</p>
+                            {% if item.product.prescription_required %}
+                                <span class="badge bg-warning">Prescription requise</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>{{ "{:,.0f}".format(item.product.price) }} FC</strong>
+                        </div>
+                        <div class="col-md-2">
+                            <form method="POST" action="{{ url_for('update_cart', item_id=item.id) }}" 
+                                  class="d-inline">
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary" type="button" 
+                                            onclick="decreaseQuantity({{ item.id }})">-</button>
+                                    <input type="number" class="form-control text-center" 
+                                           id="quantity_{{ item.id }}" name="quantity" 
+                                           value="{{ item.quantity }}" min="1" 
+                                           max="{{ item.product.stock_quantity }}"
+                                           onchange="this.form.submit()">
+                                    <button class="btn btn-outline-secondary" type="button" 
+                                            onclick="increaseQuantity({{ item.id }})">+</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-1">
+                            <strong class="text-primary">{{ "{:,.0f}".format(item.subtotal) }} FC</strong>
+                        </div>
+                        <div class="col-md-1">
+                            <a href="{{ url_for('remove_from_cart', item_id=item.id) }}" 
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('Retirer cet article du panier ?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Continue Shopping -->
+            <div class="mb-3">
+                <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Continuer mes achats
+                </a>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="card sticky-top">
+                <div class="card-header">
+                    <h5 class="mb-0">Résumé de la commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Articles ({{ cart_items|length }})</span>
+                        <span>{{ "{:,.0f}".format(total) }} FC</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Livraison</span>
+                        <span class="text-success">Gratuite</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        <strong class="text-primary">{{ "{:,.0f}".format(total) }} FC</strong>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card me-2"></i>Passer commande
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Info -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-truck text-success me-2"></i>Livraison express</h6>
+                    <p class="small text-muted mb-0">
+                        Livraison gratuite en moins de 2h dans tout Kinshasa
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Prescription Info -->
+            {% set prescription_items = cart_items | selectattr('product.prescription_required', 'equalto', true) | list %}
+            {% if prescription_items %}
+            <div class="card mt-3 border-warning">
+                <div class="card-body">
+                    <h6 class="text-warning">
+                        <i class="fas fa-prescription me-2"></i>Prescription requise
+                    </h6>
+                    <p class="small text-muted mb-0">
+                        {{ prescription_items|length }} article(s) nécessitent une prescription. 
+                        Elle sera demandée lors de la livraison.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 5rem;"></i>
+                <h4 class="text-muted">Votre panier est vide</h4>
+                <p class="text-muted">Découvrez notre catalogue et ajoutez des produits à votre panier</p>
+                <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-pills me-2"></i>Voir nos produits
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function increaseQuantity(itemId) {
+    const input = document.getElementById('quantity_' + itemId);
+    const max = parseInt(input.getAttribute('max'));
+    if (parseInt(input.value) < max) {
+        input.value = parseInt(input.value) + 1;
+        input.form.submit();
+    }
+}
+
+function decreaseQuantity(itemId) {
+    const input = document.getElementById('quantity_' + itemId);
+    if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+        input.form.submit();
+    }
+}
+</script>
+{% endblock %}

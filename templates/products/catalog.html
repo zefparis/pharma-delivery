@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Catalogue - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item active">Catalogue</li>
+        </ol>
+    </nav>
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-pills"></i> Catalogue des médicaments</h1>
+            <p class="text-muted">Trouvez rapidement vos médicaments grâce à notre recherche avancée</p>
+        </div>
+    </div>
+    
+    <!-- Search and filters -->
+    <div class="filter-section">
+        <form method="GET" id="search-form" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" name="search" id="search-input"
+                           placeholder="Rechercher un médicament, laboratoire..." 
+                           value="{{ search_query or '' }}">
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <select class="form-select" name="category" onchange="this.form.submit()">
+                    <option value="">Toutes les catégories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" 
+                                {% if current_category == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Results info -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <p class="text-muted">
+                {{ products.total }} produit(s) trouvé(s)
+                {% if search_query %}
+                    pour "{{ search_query }}"
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            {% if search_query or current_category %}
+                <a href="{{ url_for('catalog') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times"></i> Effacer les filtres
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Products grid -->
+    {% if products.items %}
+        <div class="row">
+            {% for product in products.items %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="{{ product.image_url or 'https://via.placeholder.com/300x200/f8f9fa/6c757d?text=Produit' }}" 
+                                 class="card-img-top" alt="{{ product.name }}">
+                            
+                            {% if product.stock_quantity <= 5 %}
+                                <span class="badge bg-warning stock-badge">
+                                    {% if product.stock_quantity == 0 %}
+                                        Rupture de stock
+                                    {% else %}
+                                        Stock limité ({{ product.stock_quantity }})
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                            
+                            {% if product.prescription_required %}
+                                <span class="badge bg-info prescription-badge">
+                                    <i class="fas fa-prescription"></i> Prescription
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="product-category">{{ product.category.name }}</div>
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}
+                            </p>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-flask"></i> {{ product.laboratory or 'N/A' }} | 
+                                    <i class="fas fa-weight"></i> {{ product.dosage or 'N/A' }}
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="product-price">{{ product.price|currency }}</div>
+                                <small class="text-muted">{{ product.form or 'N/A' }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-grid">
+                                {% if product.stock_quantity > 0 %}
+                                    <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> Voir détails
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-times"></i> Indisponible
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if products.pages > 1 %}
+            <nav aria-label="Navigation des pages">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('catalog', page=products.prev_num, category=current_category, search=search_query) }}">
+                                Précédent
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in products.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != products.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('catalog', page=page_num, category=current_category, search=search_query) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('catalog', page=products.next_num, category=current_category, search=search_query) }}">
+                                Suivant
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search" style="font-size: 4rem; color: var(--text-light);"></i>
+            <h3 class="mt-3">Aucun produit trouvé</h3>
+            <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary">
+                <i class="fas fa-refresh"></i> Voir tous les produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

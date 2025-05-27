@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Mes Commandes - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-history text-primary me-2"></i>
+                Mes Commandes
+            </h2>
+            <p class="text-muted">Consultez l'historique de vos commandes</p>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="row">
+        <div class="col-12">
+            {% for order in orders %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <h6 class="mb-1">Commande #{{ order.id }}</h6>
+                            <small class="text-muted">{{ order.created_at.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-{{ 'success' if order.status == 'delivered' else 'warning' if order.status == 'pending' else 'primary' }} fs-6">
+                                {{ order.status_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>{{ order.items_count }} article(s)</strong>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-{{ 'success' if order.payment_status == 'paid' else 'warning' }}">
+                                {% if order.payment_method == 'orange' %}
+                                    Orange Money
+                                {% elif order.payment_method == 'airtel' %}
+                                    Airtel Money
+                                {% elif order.payment_method == 'africell' %}
+                                    Africell Money
+                                {% else %}
+                                    Paiement livraison
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+                            <strong class="text-primary">{{ "{:,.0f}".format(order.total_amount) }} FC</strong>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="{{ url_for('order_tracking', order_id=order.id) }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Détails
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Items Preview -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="mb-2">Articles commandés:</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for item in order.order_items[:3] %}
+                                <div class="d-flex align-items-center bg-light rounded p-2">
+                                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" 
+                                         class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                    <div>
+                                        <small class="fw-bold">{{ item.product.name }}</small><br>
+                                        <small class="text-muted">Qté: {{ item.quantity }}</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% if order.order_items|length > 3 %}
+                                <div class="d-flex align-items-center justify-content-center bg-light rounded p-2" 
+                                     style="min-width: 100px;">
+                                    <small class="text-muted">+{{ order.order_items|length - 3 }} autres</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    {% if order.status == 'delivered' %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-success btn-sm" disabled>
+                                    <i class="fas fa-check me-1"></i>Livré
+                                </button>
+                                <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-redo me-1"></i>Commander à nouveau
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- No Orders -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-bag text-muted mb-3" style="font-size: 5rem;"></i>
+                <h4 class="text-muted">Aucune commande</h4>
+                <p class="text-muted">Vous n'avez pas encore passé de commande</p>
+                <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-pills me-2"></i>Découvrir nos produits
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

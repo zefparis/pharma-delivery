@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Mon panier - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item active">Mon panier</li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-shopping-cart"></i> Mon panier</h1>
+        </div>
+    </div>
+    
+    {% if cart_items %}
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <form id="cart-form">
+                    {% for item in cart_items %}
+                        <div class="cart-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="{{ item.product.image_url or 'https://via.placeholder.com/80x80/f8f9fa/6c757d?text=Produit' }}" 
+                                         alt="{{ item.product.name }}" class="img-fluid rounded">
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <h6 class="mb-1">
+                                        <a href="{{ url_for('product_detail', product_id=item.product.id) }}" 
+                                           class="text-decoration-none">
+                                            {{ item.product.name }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ item.product.category.name }}</small>
+                                    {% if item.product.prescription_required %}
+                                        <br><small class="text-info">
+                                            <i class="fas fa-prescription"></i> Prescription requise
+                                        </small>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <div class="product-price">{{ item.product.price|currency }}</div>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-secondary btn-quantity-minus" type="button">-</button>
+                                        <input type="number" class="form-control text-center quantity-input" 
+                                               value="{{ item.quantity }}" min="0" max="{{ item.product.stock_quantity }}"
+                                               data-cart-item-id="{{ item.id }}" data-max-stock="{{ item.product.stock_quantity }}">
+                                        <button class="btn btn-outline-secondary btn-quantity-plus" type="button">+</button>
+                                    </div>
+                                    <small class="text-muted">Stock: {{ item.product.stock_quantity }}</small>
+                                </div>
+                                
+                                <div class="col-md-2 text-end">
+                                    <div class="fw-bold">{{ (item.product.price * item.quantity)|currency }}</div>
+                                    <a href="{{ url_for('remove_from_cart', cart_item_id=item.id) }}" 
+                                       class="btn btn-outline-danger btn-sm mt-1"
+                                       onclick="return confirm('Supprimer cet article du panier ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('catalog') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Continuer mes achats
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Cart Summary -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h5 class="mb-3">Résumé de la commande</h5>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total ({{ cart_items|length }} article{% if cart_items|length > 1 %}s{% endif %})</span>
+                        <span>{{ total|currency }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Livraison</span>
+                        <span class="text-success">
+                            {% if total >= 50000 %}
+                                Gratuite
+                            {% else %}
+                                5.000 CDF
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        <strong>
+                            {% if total >= 50000 %}
+                                {{ total|currency }}
+                            {% else %}
+                                {{ (total + 5000)|currency }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                    
+                    {% if total < 50000 %}
+                        <div class="alert alert-info small">
+                            <i class="fas fa-info-circle"></i>
+                            Livraison gratuite à partir de 50.000 CDF<br>
+                            Plus que {{ (50000 - total)|currency }} !
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('checkout') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle"></i> Commander
+                        </a>
+                    </div>
+                    
+                    <!-- Security info -->
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> Paiement sécurisé<br>
+                            <i class="fas fa-truck"></i> Livraison rapide
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Prescription reminder -->
+                {% set has_prescription_items = cart_items|selectattr('product.prescription_required')|list %}
+                {% if has_prescription_items %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-prescription"></i>
+                        <strong>Rappel:</strong> Certains produits de votre panier nécessitent une prescription. 
+                        Préparez votre ordonnance pour la livraison.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty cart -->
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-cart" style="font-size: 4rem; color: var(--text-light);"></i>
+            <h3 class="mt-3">Votre panier est vide</h3>
+            <p class="text-muted">Découvrez notre catalogue et ajoutez vos médicaments</p>
+            <a href="{{ url_for('catalog') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-pills"></i> Voir le catalogue
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize cart update functionality
+    initializeCartUpdates();
+});
+</script>
+{% endblock %}

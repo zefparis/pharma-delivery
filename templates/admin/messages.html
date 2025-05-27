@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Messages de support - Administration KinPharma{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 admin-sidebar">
+            <div class="text-center mb-4">
+                <h5 class="text-white">Administration</h5>
+                <small class="text-white-50">KinPharma</small>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                    <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_products') }}">
+                    <i class="fas fa-pills"></i> Produits
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_orders') }}">
+                    <i class="fas fa-box"></i> Commandes
+                </a>
+                <a class="nav-link" href="{{ url_for('admin_users') }}">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+                <a class="nav-link active" href="{{ url_for('admin_messages') }}">
+                    <i class="fas fa-envelope"></i> Messages
+                </a>
+                <hr class="text-white-50">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-arrow-left"></i> Retour au site
+                </a>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-envelope"></i> Messages de support</h1>
+                <div class="text-muted">
+                    Total: {{ messages.total }} message{% if messages.total > 1 %}s{% endif %}
+                </div>
+            </div>
+            
+            <!-- Messages List -->
+            <div class="card">
+                <div class="card-body">
+                    {% if messages.items %}
+                        {% for message in messages.items %}
+                            <div class="card mb-3 {% if not message.is_read %}border-primary{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        {% if not message.is_read %}
+                                            <span class="badge bg-primary me-2">Nouveau</span>
+                                        {% endif %}
+                                        <h6 class="mb-0">{{ message.subject }}</h6>
+                                    </div>
+                                    <div class="text-muted small">
+                                        {{ message.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="mb-3">
+                                                <strong><i class="fas fa-user"></i> {{ message.name }}</strong><br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope"></i> {{ message.email }}
+                                                    {% if message.phone %}
+                                                        | <i class="fas fa-phone"></i> {{ message.phone }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                            
+                                            <div class="message-content">
+                                                <p>{{ message.message|replace('\n', '<br>')|safe }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4 text-end">
+                                            <div class="btn-group-vertical w-100">
+                                                {% if not message.is_read %}
+                                                    <a href="{{ url_for('admin_mark_message_read', message_id=message.id) }}" 
+                                                       class="btn btn-outline-success btn-sm">
+                                                        <i class="fas fa-check"></i> Marquer comme lu
+                                                    </a>
+                                                {% else %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check"></i> Lu
+                                                    </span>
+                                                {% endif %}
+                                                
+                                                <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" 
+                                                   class="btn btn-outline-primary btn-sm mt-2">
+                                                    <i class="fas fa-reply"></i> Répondre par email
+                                                </a>
+                                                
+                                                {% if message.phone %}
+                                                    <a href="tel:{{ message.phone }}" 
+                                                       class="btn btn-outline-info btn-sm mt-2">
+                                                        <i class="fas fa-phone"></i> Appeler
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Pagination -->
+                        {% if messages.pages > 1 %}
+                            <nav aria-label="Navigation des pages">
+                                <ul class="pagination justify-content-center">
+                                    {% if messages.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_messages', page=messages.prev_num) }}">
+                                                Précédent
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in messages.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != messages.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('admin_messages', page=page_num) }}">
+                                                        {{ page_num }}
+                                                    </a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">…</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if messages.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin_messages', page=messages.next_num) }}">
+                                                Suivant
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-envelope-open" style="font-size: 3rem; color: var(--text-light);"></i>
+                            <h4 class="mt-3">Aucun message trouvé</h4>
+                            <p class="text-muted">Aucun message de support reçu pour le moment</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-refresh for new messages
+setInterval(function() {
+    // Could implement real-time updates here
+}, 30000); // Check every 30 seconds
+</script>
+{% endblock %}

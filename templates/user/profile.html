@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil - KinPharma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+            <li class="breadcrumb-item active">Mon profil</li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-user-circle"></i> Mon profil</h1>
+            <p class="text-muted">Gérez vos informations personnelles et vos préférences</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Informations personnelles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom complet</label>
+                            <input type="text" class="form-control" value="{{ current_user.name }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Téléphone</label>
+                            <input type="text" class="form-control" value="{{ current_user.phone or 'Non renseigné' }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Membre depuis</label>
+                            <input type="text" class="form-control" value="{{ current_user.created_at.strftime('%d/%m/%Y') }}" readonly>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Adresse</label>
+                            <textarea class="form-control" rows="2" readonly>{{ current_user.address or 'Adresse non renseignée' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button class="btn btn-primary" disabled>
+                            <i class="fas fa-edit"></i> Modifier (Bientôt disponible)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Mes statistiques</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="admin-stats">
+                                <h3>{{ current_user.orders|length }}</h3>
+                                <p class="mb-0">Commandes passées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="admin-stats">
+                                <h3>{{ current_user.orders|selectattr('status.name', 'equalto', 'DELIVERED')|list|length }}</h3>
+                                <p class="mb-0">Commandes livrées</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="admin-stats">
+                                <h3>{{ "%.0f"|format(current_user.orders|sum(attribute='total_amount') or 0) }}</h3>
+                                <p class="mb-0">CDF dépensés</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Commandes récentes</h5>
+                    <a href="{{ url_for('user_orders') }}" class="btn btn-outline-primary btn-sm">
+                        Voir tout
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if current_user.orders %}
+                        {% for order in current_user.orders[:5] %}
+                            <div class="d-flex justify-content-between align-items-center mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                                <div>
+                                    <h6 class="mb-1">Commande #{{ order.id }}</h6>
+                                    <small class="text-muted">{{ order.created_at.strftime('%d/%m/%Y') }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold">{{ order.total_amount|currency }}</div>
+                                    <span class="badge 
+                                        {% if order.status.name == 'PENDING' %}bg-warning
+                                        {% elif order.status.name == 'CONFIRMED' %}bg-info
+                                        {% elif order.status.name == 'PREPARING' %}bg-primary
+                                        {% elif order.status.name == 'SHIPPED' %}bg-primary
+                                        {% elif order.status.name == 'DELIVERED' %}bg-success
+                                        {% elif order.status.name == 'CANCELLED' %}bg-danger
+                                        {% endif %}">
+                                        {{ order.status.value }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-box text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Aucune commande trouvée</p>
+                            <a href="{{ url_for('catalog') }}" class="btn btn-primary">
+                                <i class="fas fa-pills"></i> Commander maintenant
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Actions rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('catalog') }}" class="btn btn-primary">
+                            <i class="fas fa-pills"></i> Parcourir le catalogue
+                        </a>
+                        <a href="{{ url_for('cart') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-shopping-cart"></i> Voir mon panier
+                        </a>
+                        <a href="{{ url_for('user_orders') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-box"></i> Mes commandes
+                        </a>
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-headset"></i> Support client
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Security -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt"></i> Sécurité du compte</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Email vérifié</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-lock text-primary me-2"></i>
+                        <span>Mot de passe sécurisé</span>
+                    </div>
+                    <button class="btn btn-outline-warning btn-sm w-100" disabled>
+                        <i class="fas fa-key"></i> Changer le mot de passe
+                        <small class="d-block">(Bientôt disponible)</small>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Preferences -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Préférences</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" checked disabled>
+                        <label class="form-check-label">
+                            Notifications de livraison
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" checked disabled>
+                        <label class="form-check-label">
+                            Offres et promotions
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" disabled>
+                        <label class="form-check-label">
+                            Rappels de renouvellement
+                        </label>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt"></i> Se déconnecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
