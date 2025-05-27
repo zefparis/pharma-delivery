@@ -1,4 +1,4 @@
-// KinPharma JavaScript functionality
+// Pharma-Express JavaScript functionality
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
