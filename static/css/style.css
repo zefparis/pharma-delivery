@@ -154,9 +154,10 @@ body {
 }
 
 .product-price {
-    font-size: 1.25rem;
-    font-weight: bold;
+    font-size: 1.4rem;
+    font-weight: 700;
     color: var(--secondary-color);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .product-category {
