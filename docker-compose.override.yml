@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      target: development
+    command: >
+      sh -c "python -m pip install --no-cache-dir -e . &&
+             flask run --host=0.0.0.0 --port=8000 --reload --debugger"
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/pharmadelivery_dev
+      - REDIS_URL=redis://cache:6379/0
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # Pour le débogage distant
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=pharmadelivery_dev
+    ports:
+      - "5432:5432"
+
+  cache:
+    ports:
+      - "6379:6379"
+
+  # Outils de développement
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: pharmadelivery_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - app-network
+
+  # Interface d'administration pour la base de données
+  adminer:
+    image: adminer:latest
+    container_name: pharmadelivery_adminer
+    restart: unless-stopped
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Outil de surveillance des logs
+  logspout:
+    image: gliderlabs/logspout:latest
+    container_name: pharmadelivery_logspout
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: syslog://logs:5000
+    depends_on:
+      - logs
+    networks:
+      - app-network
+
+  # Serveur de logs centralisé
+  logs:
+    image: gliderlabs/logspout:master
+    container_name: pharmadelivery_logs
+    command: echo "Logs server"
+    ports:
+      - "5000:80"
+    networks:
+      - app-network
+
+  # Outil de surveillance des performances
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: pharmadelivery_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  # Visualisation des métriques
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pharmadelivery_grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+volumes:
+  grafana_data:
+
+networks:
+  app-network:
+    driver: bridge

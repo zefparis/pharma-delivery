@@ -1,51 +1,201 @@
 {
   "version": 2,
+  "$schema": "https://json.schemastore.org/vercel.json",
+  "regions": ["cdg1"],
+  
+  // Configuration des builds
   "builds": [
+    // Build pour l'API Python
     {
       "src": "api/index.py",
-      "use": "@vercel/python",
+      "use": "@vercel/python@6.0.0",
       "config": {
-        "maxLambdaSize": "50mb",
-        "runtime": "python3.10",
+        "maxLambdaSize": "100mb",
+        "runtime": "python3.11",
         "includeFiles": [
+          "app.py",
+          "config.py",
+          "*.py",
+          "requirements.txt",
+          "vercel-build.sh",
+          "migrations/**",
+          "api/**",
+          "models/**",
+          "services/**",
+          "utils/**",
           "templates/**",
           "static/**",
-          "*.py",
-          "requirements.txt"
+          ".env*"
         ]
       }
     },
+    // Build pour les fichiers statiques
     {
       "src": "static/**",
-      "use": "@vercel/static"
+      "use": "@vercel/static@1.0.0"
     }
   ],
+  
+  // Configuration des routes
   "routes": [
+    // Fichiers statiques
     {
       "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "dest": "/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
+    
+    // Fichiers médias et ressources
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|ico|svg|css|js|json|html|txt|woff|woff2|ttf|eot|otf))",
+      "dest": "/api/index.py"
+    },
+    
+    // Endpoint de santé
     {
       "src": "/api/health",
-      "dest": "/api/index.py"
+      "dest": "/api/index.py",
+      "methods": ["GET", "HEAD"],
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "X-Content-Type-Options": "nosniff"
+      }
     },
+    
+    // Endpoint d'initialisation de la base de données
     {
       "src": "/api/setup-db",
-      "dest": "/api/setup_db.py"
+      "dest": "/api/setup_db.py",
+      "methods": ["GET", "POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+        "Access-Control-Max-Age": "86400"
+      }
     },
+    
+    // Toutes API
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.py",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    
+    // Toutes d'application (SPA)
     {
       "src": "/(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index.py",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache"
+      }
     }
   ],
+  
+  // Variables d'environnement
   "env": {
+    // Configuration Flask
+    "FLASK_APP": "api/index.py",
     "FLASK_ENV": "production",
     "PYTHONUNBUFFERED": "1",
-    "PYTHONPATH": "/var/task"
+    "PYTHONPATH": "/var/task:/var/task/api",
+    "PYTHON_VERSION": "3.11",
+    
+    // Configuration PostgreSQL
+    "PGSSLMODE": "require",
+    "PGREQUIRESSL": "1",
+    "PGTIMEOUT": "15",
+    "PGCONNECT_TIMEOUT": "15",
+    
+    // Configuration de l'application
+    "NODE_ENV": "production",
+    "FLASK_DEBUG": "0",
+    "FLASK_RUN_HOST": "0.0.0.0",
+    "FLASK_RUN_PORT": "5000",
+    "FLASK_RUN_DEBUG": "0",
+    "FLASK_USE_RELOADER": "0",
+    "FLASK_USE_DEBUGGER": "0",
+    "FLASK_USE_THREADS": "true",
+    "FLASK_USE_PROCESSES": "1",
+    "FLASK_PROCESSES": "1",
+    "FLASK_THREADS": "4",
+    "FLASK_MAX_REQUESTS": "1000",
+    "FLASK_MAX_REQUESTS_JITTER": "50",
+    
+    // Sécurité
+    "SESSION_COOKIE_SECURE": "true",
+    "SESSION_COOKIE_HTTPONLY": "true",
+    "SESSION_COOKIE_SAMESITE": "Lax",
+    "PERMANENT_SESSION_LIFETIME": "3600",
+    "TRAP_HTTP_EXCEPTIONS": "true",
+    "TRAP_BAD_REQUEST_ERRORS": "true"
   },
+  
+  // Configuration du build
   "build": {
     "env": {
-      "PYTHONUNBUFFERED": "1"
+      // Variables sensibles (définies dans les secrets Vercel)
+      "DATABASE_URL": "@pharma_delivery_db_url",
+      "SECRET_KEY": "@pharma_delivery_secret_key",
+      "SUPABASE_URL": "@pharma_delivery_supabase_url",
+      "SUPABASE_KEY": "@pharma_delivery_supabase_key",
+      "SETUP_DB_TOKEN": "@pharma_delivery_setup_db_token",
+      
+      // Configuration de l'environnement
+      "NODE_ENV": "production",
+      "PYTHONUNBUFFERED": "1",
+      "PGSSLMODE": "require",
+      "PGREQUIRESSL": "1"
     }
-  }
+  },
+  
+  // Configuration des fonctions serverless
+  "functions": {
+    "api/index.py": {
+      "memory": 3008,
+      "maxDuration": 30,
+      "runtime": "python3.11",
+      "includeFiles": [
+        "app.py",
+        "config.py",
+        "*.py",
+        "requirements.txt",
+        "vercel-build.sh",
+        "migrations/**",
+        "api/**",
+        "models/**",
+        "services/**",
+        "utils/**"
+      ]
+    },
+    "api/setup_db.py": {
+      "memory": 3008,
+      "maxDuration": 60,
+      "runtime": "python3.11"
+    }
+  },
+  "github": {
+    "enabled": true,
+    "autoJobCancelation": true,
+    "autoAlias": true,
+    "autoJobDeletion": true,
+    "autoDeployOnPush": true,
+    "autoDeployOnCreate": true,
+    "autoDeployOnUpdate": true,
+    "autoDeployOnDelete": true
+  },
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

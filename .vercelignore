@@ -1,0 +1,127 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Environnements virtuels
+venv/
+env/
+.venv/
+ENV/
+
+# Fichiers de cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Fichiers de développement
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Fichiers de logs
+logs/
+*.log
+
+# Fichiers de couverture de test
+.coverage
+htmlcov/
+
+# Fichiers de configuration locaux
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de déploiement
+.vercel/
+.vercel_builds/
+
+# Fichiers de documentation
+docs/
+
+# Fichiers de test
+tests/
+
+# Fichiers de données volumineux
+*.db
+*.sqlite3
+*.sql
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.zip
+*.tar.gz
+
+# Fichiers de média
+media/
+uploads/
+
+# Fichiers de cache
+dist/
+build/
+*.egg-info/
+
+# Fichiers spécifiques à Vercel
+.vercel/
+.vercel_builds/
+
+# Fichiers de configuration locaux
+.env
+.env.*
+!.env.example
+
+# Fichiers de cache système
+.venv/
+venv/
+ENV/
+
+# Fichiers de développement
+.python-version
+
+# Fichiers de déploiement
+*.pyc
+__pycache__/
+
+# Fichiers de test
+.coverage
+htmlcov/
+
+# Fichiers de documentation
+_build/
+
+# Fichiers spécifiques à l'éditeur
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Fichiers de déploiement
+build/
+dist/
+*.egg-info/
+
+# Fichiers de cache
+.cache/
+.mypy_cache/
+.pytest_cache/
+
+# Fichiers de données
+*.db
+*.sqlite3
+*.sql
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.zip
+*.tar.gz
+
+# Fichiers de média
+media/
+uploads/

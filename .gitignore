@@ -1,10 +1,25 @@
-# Python
+# =============================================================================
+# FICHIER .GITIGNORE POUR PHARMA DELIVERY
+# =============================================================================
+# Ce fichier indique à Git quels fichiers ignorer dans le dépôt.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. PYTHON
+# -----------------------------------------------------------------------------
+# Fichiers de compilation et bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
+*.pyc
+*.pyo
+*.pyd
+*.py,cover
+*.so
+
+# Distribution / packaging
 build/
 develop-eggs/
 dist/
@@ -20,24 +35,195 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.manifest
+*.spec
 
-# Virtual Environment
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# 2. ENVIRONNEMENTS VIRTUELS
+# -----------------------------------------------------------------------------
+# Environnements virtuels Python
 venv/
 ENV/
-
-# Database
-*.sqlite3
-*.db
-
-# Environment variables
 .env
+.venv
+env/
+venv.bak/
 
-# IDE
+# Environnement pipenv
+Pipfile.lock
+Pipfile
+
+# -----------------------------------------------------------------------------
+# 3. FICHIERS DE CONFIGURATION ET DONNÉES SENSIBLES
+# -----------------------------------------------------------------------------
+# Fichiers d'environnement
+.env
+.env.*
+!.env.example
+
+# Fichiers de configuration locaux
+local_settings.py
+settings_local.py
+
+# Fichiers de configuration spécifiques aux IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
-# OS
+# Fichiers de configuration système
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# -----------------------------------------------------------------------------
+# 4. BASE DE DONNÉES ET STOCKAGE
+# -----------------------------------------------------------------------------
+# Fichiers de base de données SQLite
+*.sqlite3
+*.db
+*.sql
+
+# Fichiers de migration (à adapter selon votre gestion de migration)
+# Exemple pour Alembic :
+# alembic/versions/*.py
+# !alembic/versions/__init__.py
+
+# Fichiers de cache et sessions
+.cache/
+.sessions/
+
+# Fichiers téléchargés
+uploads/
+media/
+
+# -----------------------------------------------------------------------------
+# 5. LOGS ET FICHIERS TEMPORAIRES
+# -----------------------------------------------------------------------------
+# Fichiers de log
+*.log
+logs/
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.swp
+*~
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*.bkp
+
+# -----------------------------------------------------------------------------
+# 6. DÉPLOIEMENT ET PRODUCTION
+# -----------------------------------------------------------------------------
+# Dossier de déploiement Vercel
+.vercel/
+.vercel_builds/
+.vercel_output/
+
+# Fichiers de build
+build/
+dist/
+
+# Fichiers de package
+*.whl
+*.tar.gz
+
+# -----------------------------------------------------------------------------
+# 7. DOCUMENTATION
+# -----------------------------------------------------------------------------
+docs/_build/
+docs/api/
+
+# -----------------------------------------------------------------------------
+# 8. DÉPENDANCES ET PAQUETS
+# -----------------------------------------------------------------------------
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Python
+.python-version
+
+# -----------------------------------------------------------------------------
+# 9. TESTS ET COUVERTURE DE CODE
+# -----------------------------------------------------------------------------
+# Fichiers de test unitaire
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.tox/
+
+# Fichiers de performance
+.pytest_cache/
+.mypy_cache/
+
+# -----------------------------------------------------------------------------
+# 10. AUTRES
+# -----------------------------------------------------------------------------
+# Fichiers de cache
+.cache/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.swp
+*~
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*.bkp
+
+# Fichiers de configuration spécifiques aux éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

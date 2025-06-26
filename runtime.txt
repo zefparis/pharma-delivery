@@ -1,1 +1,18 @@
-python-3.10.4
+# =============================================================================
+# RUNTIME.TXT - VERSION DE PYTHON POUR VERCEL
+# =============================================================================
+# Ce fichier spécifie la version de Python à utiliser pour le déploiement Vercel.
+# Format: python-3.11.0 (exact) ou 3.11 (version mineure)
+# Vérifiez les versions disponibles sur: https://vercel.com/docs/runtimes#official-runtimes/python
+# =============================================================================
+
+# Version majeure recommandée: 3.11 (équilibre entre stabilité et fonctionnalités)
+python-3.11.8
+
+# Autres versions disponibles (décommentez celle souhaitée) :
+# python-3.12.0  # Dernière version majeure (peut nécessiter des mises à jour de dépendances)
+# python-3.10.0  # Version LTS (support à long terme)
+# python-3.9.0   # Ancienne version LTS
+
+# Note: Assurez-vous que votre environnement de développement local utilise la même version
+# pour éviter les problèmes de compatibilité. Utilisez pyenv ou conda pour gérer les versions Python.

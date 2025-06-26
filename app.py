@@ -1,12 +1,15 @@
 import os
 import sys
 import logging
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, current_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, UserMixin
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.exceptions import HTTPException
+
+# Import de la configuration
+from config import config, current_config
 
 # Configuration du logging avancé
 logging.basicConfig(
@@ -17,23 +20,183 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 logger.info("Démarrage de l'application Flask")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, UserMixin):
+    """Classe de base pour les modèles SQLAlchemy avec support de Flask-Login"""
     pass
 
+# Initialisation des extensions
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
-# create the app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "pharma-express-secret-key-2024")
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+def create_app(config_name=None):
+    """Crée et configure une instance de l'application Flask.
+    
+    Args:
+        config_name (str, optional): Le nom de la configuration à charger. Par défaut, utilise FLASK_ENV ou 'development'.
+        
+    Returns:
+        Flask: L'application Flask configurée.
+    """
+    # Création de l'application Flask
+    app = Flask(__name__)
+    
+    # Configuration de l'application
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'development')
+    
+    # Chargement de la configuration appropriée
+    app.config.from_object(config[config_name])
+    
+    # Configuration du logging
+    if app.config.get('DEBUG'):
+        app.logger.setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        app.logger.setLevel(logging.INFO)
+        logging.basicConfig(level=logging.INFO)
+    
+    logger.info(f"Configuration chargée: {config_name}")
+    
+    # Initialisation des extensions
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
+    login_manager.login_message_category = 'info'
+    
+    # Configuration pour le reverse proxy (nécessaire pour Vercel)
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,  # Nombre de proxies de confiance pour X-Forwarded-For
+        x_proto=1,  # Nombre de proxies de confiance pour X-Forwarded-Proto
+        x_host=1,   # Nombre de proxies de confiance pour X-Forwarded-Host
+        x_port=1,   # Nombre de proxies de confiance pour X-Forwarded-Port
+        x_prefix=1  # Nombre de proxies de confiance pour X-Forwarded-Prefix
+    )
+    
+    # Enregistrement des blueprints
+    from routes import init_routes
+    init_routes(app)
+    
+    # Middleware pour le logging des requêtes
+    @app.before_request
+    def log_request_info():
+        """Log les informations de la requête entrante."""
+        if app.config.get('DEBUG'):
+            logger.info(f"Requête: {request.method} {request.path}")
+            logger.debug(f"Headers: {dict(request.headers)}")
+            logger.debug(f"Args: {request.args}")
+            
+            # Ne pas logger les mots de passe
+            if request.is_json:
+                json_data = request.get_json(silent=True) or {}
+                if 'password' in json_data:
+                    json_data = json_data.copy()
+                    json_data['password'] = '********'
+                logger.debug(f"JSON: {json_data}")
+            elif request.form:
+                form_data = dict(request.form)
+                if 'password' in form_data:
+                    form_data = form_data.copy()
+                    form_data['password'] = '********'
+                logger.debug(f"Form: {form_data}")
+    
+    # Gestion des erreurs 400 (Bad Request)
+    @app.errorhandler(400)
+    def bad_request_error(e):
+        """Gère les erreurs 400 (Bad Request)."""
+        logger.warning(f"Bad Request: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Requête incorrecte',
+            'error': str(e) if app.config.get('DEBUG') else None
+        }), 400
+    
+    # Gestion des erreurs 401 (Unauthorized)
+    @app.errorhandler(401)
+    def unauthorized_error(e):
+        """Gère les erreurs 401 (Unauthorized)."""
+        logger.warning(f"Unauthorized: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Non autorisé',
+            'error': str(e) if app.config.get('DEBUG') else 'Authentification requise'
+        }), 401
+    
+    # Gestion des erreurs 403 (Forbidden)
+    @app.errorhandler(403)
+    def forbidden_error(e):
+        """Gère les erreurs 403 (Forbidden)."""
+        logger.warning(f"Forbidden: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Accès refusé',
+            'error': str(e) if app.config.get('DEBUG') else 'Vous n\'avez pas les droits nécessaires'
+        }), 403
+    
+    # Gestion des erreurs 404 (Not Found)
+    @app.errorhandler(404)
+    def page_not_found(e):
+        """Gère les erreurs 404 (Not Found)."""
+        logger.warning(f"Page non trouvée: {request.path}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Page non trouvée',
+            'error': str(e) if app.config.get('DEBUG') else None
+        }), 404
+    
+    # Gestion des erreurs 405 (Method Not Allowed)
+    @app.errorhandler(405)
+    def method_not_allowed_error(e):
+        """Gère les erreurs 405 (Method Not Allowed)."""
+        logger.warning(f"Méthode non autorisée: {request.method} {request.path}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Méthode non autorisée',
+            'error': str(e) if app.config.get('DEBUG') else None
+        }), 405
+    
+    # Gestion des erreurs 500 (Internal Server Error)
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        """Gère les erreurs 500 (Internal Server Error)."""
+        logger.error(f"Erreur interne du serveur: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Erreur interne du serveur',
+            'error': str(e) if app.config.get('DEBUG') else 'Une erreur est survenue'
+        }), 500
+    
+    # Gestion des exceptions non capturées
+    @app.errorhandler(Exception)
+    def handle_unhandled_exception(e):
+        """Gère les exceptions non capturées."""
+        logger.error(f"Exception non gérée: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Erreur inattendue',
+            'error': str(e) if app.config.get('DEBUG') else 'Une erreur inattendue est survenue'
+        }), 500
+    
+    # Commande CLI pour initialiser la base de données
+    @app.cli.command('init-db')
+    def init_db_command():
+        """Initialise la base de données."""
+        try:
+            db.create_all()
+            logger.info('Base de données initialisée avec succès')
+            return 'Base de données initialisée avec succès'
+        except Exception as e:
+            error_msg = f'Erreur lors de l\'initialisation de la base de données: {str(e)}'
+            logger.error(error_msg)
+            logger.error(traceback.format_exc())
+            raise e
+    
+    logger.info('Application initialisée avec succès')
+    return app
+
+# Création de l'application
+app = create_app()
 
 # Middleware pour logger les requêtes
 @app.before_request
@@ -44,18 +207,39 @@ def log_request_info():
     logger.debug(f"Form: {request.form}")
     logger.debug(f"JSON: {request.get_json(silent=True)}")
 
-# configure the database
-if os.environ.get('DATABASE_URL'):
-    # Production - PostgreSQL
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL'].replace('postgres://', 'postgresql://', 1)
-else:
-    # Development - SQLite
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///pharma-express.db"
+# Configure the database
+def get_database_uri():
+    if 'DATABASE_URL' in os.environ:
+        # Production - PostgreSQL (Supabase)
+        db_url = os.environ['DATABASE_URL']
+        # Ensure the URL starts with postgresql:// (not postgres://)
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        return db_url
+    else:
+        # Development - SQLite
+        return "sqlite:///pharma-express.db"
 
+app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "pool_size": 5,
+    "max_overflow": 10,
+    "pool_timeout": 30,
+    "connect_args": {
+        "connect_timeout": 10,
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5
+    }
 }
+
+# Configure SQLAlchemy to use NullPool in production
+if os.environ.get('FLASK_ENV') == 'production':
+    from sqlalchemy.pool import NullPool
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"]["poolclass"] = NullPool
 
 # initialize extensions
 db.init_app(app)

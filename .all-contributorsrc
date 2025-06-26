@@ -1,0 +1,132 @@
+{
+  "$schema": "https://raw.githubusercontent.com/all-contributors/all-contributors-cli/master/.schema/all-contributors-schema.json",
+  "files": [
+    "README.md",
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [],
+  "badgeTemplate": "<a href="#contributors" target="_blank"><img alt="All Contributors" src="https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square" /></a>",
+  "contributorTemplate": "<a href="<%= contributor.profile %>" target="_blank" rel="noopener noreferrer"><img src="<%= contributor.avatar_url %>" width="<%= options.imageSize %>px;" alt=""/><br /><sub><b><%= contributor.name %></b></sub></a>",
+  "types": {
+    "blog": {
+      "symbol": "📝",
+      "description": "Blogposts",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/blob/master/BLOGPOSTS.md#%{userName}"
+    },
+    "bug": {
+      "symbol": "🐛",
+      "description": "Bug reports",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/issues?q=author%3A%{userName}+label%3Abug"
+    },
+    "code": {
+      "symbol": "💻",
+      "description": "Code",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "content": {
+      "symbol": "🖋",
+      "description": "Content",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "doc": {
+      "symbol": "📖",
+      "description": "Documentation",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "design": {
+      "symbol": "🎨",
+      "description": "Design",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "example": {
+      "symbol": "💡",
+      "description": "Examples",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "ideas": {
+      "symbol": "🤔",
+      "description": "Ideas, Planning, & Feedback",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/issues?q=author%3A%{userName}"
+    },
+    "infra": {
+      "symbol": "🚇",
+      "description": "Infrastructure (Hosting, Build-Tools, etc)",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "platform": {
+      "symbol": "📦",
+      "description": "Packaging/porting to new platform",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "plugin": {
+      "symbol": "🔌",
+      "description": "Plugin/utility libraries",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "question": {
+      "symbol": "💬",
+      "description": "Answering Questions",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/issues?q=author%3A%{userName}"
+    },
+    "review": {
+      "symbol": "👀",
+      "description": "Reviewed Pull Requests",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/pulls?q=reviewed-by%3A%{userName}"
+    },
+    "security": {
+      "symbol": "🛡️",
+      "description": "Security",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "test": {
+      "symbol": "⚠️",
+      "description": "Tests",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "tutorial": {
+      "symbol": "✅",
+      "description": "Tutorials",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "talk": {
+      "symbol": "📢",
+      "description": "Talks",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "translation": {
+      "symbol": "🌍",
+      "description": "Translation",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "tool": {
+      "symbol": "🔧",
+      "description": "Tools",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "userTesting": {
+      "symbol": "📓",
+      "description": "User Testing",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/issues?q=author%3A%{userName}"
+    },
+    "video": {
+      "symbol": "📹",
+      "description": "Videos",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "maintenance": {
+      "symbol": "🚧",
+      "description": "Maintenance",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    },
+    "financial": {
+      "symbol": "💵",
+      "description": "Financial",
+      "link": "https://github.com/%{projectOwner}/%{projectName}/commits?author=%{userName}"
+    }
+  },
+  "skipCi": true
+}

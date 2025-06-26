@@ -1,0 +1,126 @@
+# Définir le comportement par défaut pour tous les fichiers
+* text=auto eol=lf
+
+# Fichiers binaires qui sont des ressources texte
+*.css text
+*.html text
+*.js text
+*.json text
+*.md text
+*.py text
+*.sh text
+*.txt text
+*.yml text
+*.yaml text
+
+# Fichiers binaires qui doivent rester tels quels
+*.gif binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.svg binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Fichiers spécifiques à Windows
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Fichiers de configuration spécifiques aux éditeurs
+.editorconfig export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+
+# Fichiers de développement et de test
+tests/ export-ignore
+.pytest_cache/ export-ignore
+.coverage export-ignore
+htmlcov/ export-ignore
+
+# Fichiers d'environnement et de configuration locale
+.env export-ignore
+.env.* export-ignore
+!.env.example
+
+# Fichiers de build et de distribution
+build/ export-ignore
+dist/ export-ignore
+*.egg-info/ export-ignore
+*.egg export-ignore
+
+# Fichiers de cache et temporaires
+.cache/ export-ignore
+.sessions/ export-ignore
+*.swp export-ignore
+*.swo export-ignore
+*~ export-ignore
+
+# Fichiers de déploiement Vercel
+.vercel/ export-ignore
+.vercel_builds/ export-ignore
+.vercel_output/ export-ignore
+
+# Fichiers de base de données locale
+*.sqlite3 export-ignore
+*.sqlite export-ignore
+*.db export-ignore
+*.sql export-ignore
+
+# Fichiers de logs
+*.log export-ignore
+logs/ export-ignore
+
+# Fichiers de l'environnement virtuel
+venv/ export-ignore
+ENV/ export-ignore
+.env/ export-ignore
+.venv/ export-ignore
+venv*/ export-ignore
+env*/ export-ignore
+
+# Fichiers spécifiques aux éditeurs
+.idea/ export-ignore
+.vscode/ export-ignore
+*.sublime-workspace export-ignore
+*.sublime-project export-ignore
+*.code-workspace export-ignore
+
+# Fichiers système
+.DS_Store export-ignore
+Thumbs.db export-ignore
+desktop.ini export-ignore
+
+# Fichiers de documentation
+docs/_build/ export-ignore
+docs/api/ export-ignore
+
+# Fichiers de dépendances
+node_modules/ export-ignore
+bower_components/ export-ignore
+
+# Fichiers de téléchargements
+uploads/ export-ignore
+media/ export-ignore
+
+# Fichiers de configuration personnalisés
+custom.py export-ignore
+
+# Fichiers de test
+test_data/ export-ignore
+
+# Fichiers de déploiement
+deploy/ export-ignore
+
+# Fichiers de build
+dist/ export-ignore
+build/ export-ignore
+
+# Fichiers de cache
+tmp/ export-ignore
+
+# Fichiers de logs
+logs/ export-ignore
+*.log export-ignore

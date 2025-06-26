@@ -1,0 +1,153 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# https://editorconfig.org
+
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Python files
+[*.py]
+indent_size = 4
+max_line_length = 88
+
+# JavaScript, JSON, YAML, HTML, CSS
+[*.{js,json,yml,yaml,html,css,scss}]
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+
+# Batch files for Windows
+[*.{cmd,bat}]
+end_of_line = crlf
+
+# Shell scripts
+[*.sh]
+indent_size = 2
+
+# Makefiles use tabs for indentation
+[Makefile]
+indent_style = tab
+
+# Docker files use 2 spaces
+[Dockerfile*]
+indent_size = 2
+
+# Configuration files
+[*.{ini,toml}]
+indent_style = space
+indent_size = 4
+
+# SQL files
+[*.sql]
+indent_size = 2
+
+# XML files
+[*.{xml,xsd,xslt}]
+indent_size = 2
+
+# Git merge and diff files
+[*.{diff,md,orig,patch,rej}]
+trim_trailing_whitespace = false
+
+# Ignore files that are not meant to be edited
+[package-lock.json]
+indent_size = 2
+
+# Python package metadata
+[setup.cfg]
+indent_size = 4
+
+# Python package metadata
+[pyproject.toml]
+indent_size = 4
+
+# Python test files
+[tests/*.py]
+indent_size = 4
+
+# Python configuration files
+[*.{cfg,ini}]
+indent_style = space
+indent_size = 4
+
+# Documentation files
+[docs/*.md]
+trim_trailing_whitespace = false
+
+# Configuration for VSCode
+[.vscode/*.json]
+indent_size = 2
+
+# Configuration for VSCode settings
+[.vscode/settings.json]
+indent_size = 2
+
+# Configuration for VSCode launch
+[.vscode/launch.json]
+indent_size = 2
+
+# Configuration for VSCode tasks
+[.vscode/tasks.json]
+indent_size = 2
+
+# Configuration for VSCode extensions
+[.vscode/extensions.json]
+indent_size = 2
+
+# Configuration for VSCode snippets
+[.vscode/*.code-snippets]
+indent_size = 2
+
+# Configuration for VSCode workspace
+[*.code-workspace]
+indent_size = 2
+
+# Configuration for VSCode settings
+[.vscode/settings.json]
+indent_size = 2
+
+# Configuration for VSCode keybindings
+[.vscode/keybindings.json]
+indent_size = 2
+
+# Configuration for VSCode extensions
+[.vscode/extensions.json]
+indent_size = 2
+
+# Configuration for VSCode snippets
+[.vscode/*.code-snippets]
+indent_size = 2
+
+# Configuration for VSCode workspace
+[*.code-workspace]
+indent_size = 2
+
+# Configuration for VSCode settings
+[.vscode/settings.json]
+indent_size = 2
+
+# Configuration for VSCode keybindings
+[.vscode/keybindings.json]
+indent_size = 2
+
+# Configuration for VSCode extensions
+[.vscode/extensions.json]
+indent_size = 2
+
+# Configuration for VSCode snippets
+[.vscode/*.code-snippets]
+indent_size = 2
+
+# Configuration for VSCode workspace
+[*.code-workspace]
+indent_size = 2

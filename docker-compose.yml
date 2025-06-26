@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  # Application principale
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pharmadelivery_app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/pharmadelivery
+      - REDIS_URL=redis://cache:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+      - cache
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Base de données PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: pharmadelivery_db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=pharmadelivery
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./init-db:/docker-entrypoint-initdb.d/
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Cache Redis
+  cache:
+    image: redis:7-alpine
+    container_name: pharmadelivery_cache
+    restart: unless-stopped
+    command: redis-server --requirepass your_redis_password
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Interface d'administration pour Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: pharmadelivery_redis_commander
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:cache:6379
+      - REDIS_PASSWORD=your_redis_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - cache
+    networks:
+      - app-network
+
+  # Interface d'administration pour PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:7.1
+    container_name: pharmadelivery_pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Outil de surveillance
+  watchtower:
+    image: containrrr/watchtower
+    container_name: pharmadelivery_watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30
+    networks:
+      - app-network
+
+# Volumes pour la persistance des données
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+
+# Réseau pour la communication entre les conteneurs
+networks:
+  app-network:
+    driver: bridge
