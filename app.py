@@ -1,11 +1,21 @@
 import os
+import sys
 import logging
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.exceptions import HTTPException
+
+# Configuration du logging avancé
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
+logger = logging.getLogger(__name__)
+logger.info("Démarrage de l'application Flask")
 
 # Configure logging
 logging.basicConfig(
@@ -22,8 +32,17 @@ login_manager = LoginManager()
 
 # create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "pharma-express-secret-key-2024")
+app.secret_key = os.environ.get("SECRET_KEY", "pharma-express-secret-key-2024")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# Middleware pour logger les requêtes
+@app.before_request
+def log_request_info():
+    logger.info(f"Requête: {request.method} {request.path}")
+    logger.debug(f"Headers: {dict(request.headers)}")
+    logger.debug(f"Args: {request.args}")
+    logger.debug(f"Form: {request.form}")
+    logger.debug(f"JSON: {request.get_json(silent=True)}")
 
 # configure the database
 if os.environ.get('DATABASE_URL'):
