@@ -1,13 +1,18 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.exceptions import HTTPException
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class Base(DeclarativeBase):
     pass
@@ -175,6 +180,25 @@ app.static_folder = 'static'
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# Gestion des erreurs HTTP
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    logger.error(f"HTTP Error: {e.code} - {e.name}")
+    return jsonify({
+        "error": e.name,
+        "code": e.code,
+        "description": e.description
+    }), e.code
+
+# Gestion des autres exceptions
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": "An unexpected error occurred"
+    }), 500
 
 # This is needed for Vercel
 app = app

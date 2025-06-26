@@ -5,7 +5,8 @@
       "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb"
+        "maxLambdaSize": "50mb",
+        "runtime": "python3.10"
       }
     },
     {
@@ -17,6 +18,10 @@
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/index.py"
     },
     {
       "src": "/(.*)",
