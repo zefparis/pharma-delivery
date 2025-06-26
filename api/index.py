@@ -1,4 +1,14 @@
-from app import app as application
+from app import app
+from flask import send_from_directory
+import os
 
-# This file is required for Vercel to recognize the WSGI application
-# No need to modify this file unless you have specific WSGI configurations
+# Serve static files from the root
+@app.route('/<path:path>')
+def serve_static(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return app.handle_user_exception(Exception("Not Found"))
+
+# This is needed for Vercel
+application = app

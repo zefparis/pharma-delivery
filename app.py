@@ -170,8 +170,11 @@ with app.app_context():
 import routes
 import admin_routes
 
-# This is needed for Vercel
-app = app
+# Configure static folder for Vercel
+app.static_folder = 'static'
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+# This is needed for Vercel
+app = app
